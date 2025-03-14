@@ -12,33 +12,28 @@ def main():
     match command:
         case command if command.startswith('exit'):
             parts = command.split()
-        if len(parts) > 1:
-            try:
-                exit_code = int(parts[1])
-                sys.exit(exit_code)
-            except ValueError:
-                print(f'exit: {parts[1]}: numeric argument required')
-        else:
-            sys.exit(0)
+            if len(parts) > 1:
+                try:
+                    exit_code = int(parts[1])
+                    sys.exit(exit_code)
+                except ValueError:
+                    print(f'exit: {parts[1]}: numeric argument required')
+            else:
+                sys.exit(0)
         
-    elif command.startswith('echo'):
-        print(command[5:])
+        case command.startswith('echo'):
+            print(command[5:])
         
-    elif command.startswith('type'):
-        parts = command.split()
-        if len(parts) > 1:
-            file_name = parts[1]
-            try:
-                with open(file_name, 'r') as file:
-                    content = file.read()
-                    print(content)
-            except FileNotFoundError:
-                print(f'type: {file_name}: No such file or directory')
-        else:
-            print('type: missing operand')
+        case command.startswith('type'):
+            parts = command.split()
+            if len(parts) > 1:
+                if parts[1] in commands:
+                    print(f'{parts[1]} is a shell builtin')
+            else:
+                print('type: missing argument')
         
-    else:
-        print(f'{command}: command not found')
+        case _:
+            print(f'{command}: command not found')
         
     main()
 
