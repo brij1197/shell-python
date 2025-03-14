@@ -23,9 +23,9 @@ def shell_type(*args):
     parts=args[0]
     if len(parts) > 1:
         if parts[1] in SHELL_COMMANDS:
-            print(f'{parts[1]} is a shell builtin\n')
+            print(f'{parts[1]} is a shell builtin')
         elif path :=shutil.which(parts[1]):
-            print(f'{parts[1]} is {path}\n')
+            print(f'{parts[1]} is {path}')
         else:
             print(f'{parts[1]}: not found')
     else:
