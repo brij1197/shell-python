@@ -30,7 +30,7 @@ def main():
                 if parts[1] in commands:
                     print(f'{parts[1]} is a shell builtin')
                 else:
-                    print(f'{parts[1]}: command not found')
+                    print(f'{parts[1]}: not found')
             else:
                 print('type: missing argument')
         
