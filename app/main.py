@@ -29,6 +29,8 @@ def main():
             if len(parts) > 1:
                 if parts[1] in commands:
                     print(f'{parts[1]} is a shell builtin')
+                else:
+                    print(f'{parts[1]}: command not found')
             else:
                 print('type: missing argument')
         
