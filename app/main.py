@@ -21,10 +21,10 @@ def main():
             else:
                 sys.exit(0)
         
-        case command.startswith('echo'):
+        case command if command.startswith('echo'):
             print(command[5:])
         
-        case command.startswith('type'):
+        case command if command.startswith('type'):
             parts = command.split()
             if len(parts) > 1:
                 if parts[1] in commands:
