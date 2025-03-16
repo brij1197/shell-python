@@ -25,11 +25,24 @@ def shell_pwd(*args):
 
 
 def shell_cd(*args):
-    parts=args[0]
+    parts=args[0].split()
     if len(parts)>1:
+        if parts[1]=='-':
+            old_pwd=os.getenv('OLDPWD')
+            if old_pwd:
+                current_pwd=os.getcwd()
+                os.chdir(old_pwd)
+                os.environ['OLDPWD']=current_pwd
+            else:
+                print('cd: OLDPWD not set')
+            return
+
+        current=os.getcwd()
+        
         try:
             print(parts[1])
-            os.chdir(parts[1])
+            os.chdir(os.path.expanduser(parts[1]))
+            os.environ['OLDPWD']=current
         except FileNotFoundError:
             print(f'cd: {parts[1]}: No such file or directory')
         except NotADirectoryError:
