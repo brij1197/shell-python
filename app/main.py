@@ -1,8 +1,9 @@
+import os
 import sys
 import shutil
 import subprocess
 
-SHELL_COMMANDS= ['exit','echo','type']
+SHELL_COMMANDS= ['exit','echo','type', 'pwd']
 
 def shell_exit(*args):
     parts=args[0]
@@ -18,6 +19,9 @@ def shell_exit(*args):
 
 def shell_echo(*args):
     print(args[0][5:])
+    
+def shell_pwd(*args):
+    print(os.getcwd())
 
 
 def shell_type(*args):
@@ -74,6 +78,9 @@ def main():
             case command if command.startswith('type'):
                 parts = command.split()
                 shell_type(parts)
+                
+            case command if command.startswith('pwd'):
+                shell_pwd()
             
             case _:
                 if not execute_external_command(command):
