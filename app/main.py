@@ -26,6 +26,7 @@ def shell_pwd(*args):
 
 def shell_cd(*args):
     parts=args[0]
+    print(parts)
     if len(parts)>1:
         try:
             os.chdir(parts[1])
