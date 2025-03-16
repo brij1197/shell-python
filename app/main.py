@@ -3,7 +3,7 @@ import sys
 import shutil
 import subprocess
 
-SHELL_COMMANDS= ['exit','echo','type', 'pwd']
+SHELL_COMMANDS= ['exit','echo','type', 'pwd', 'cd']
 
 def shell_exit(*args):
     parts=args[0]
@@ -23,6 +23,18 @@ def shell_echo(*args):
 def shell_pwd(*args):
     print(os.getcwd())
 
+
+def shell_cd(*args):
+    parts=args[0]
+    if len(parts)>1:
+        try:
+            os.chdir(parts[1])
+        except FileNotFoundError:
+            print(f'cd: {parts[1]}: No such file or directory')
+        except NotADirectoryError:
+            print(f'cd: {parts[1]}: Not a directory')
+    else:
+        os.chdir(os.path.expanduser('~'))
 
 def shell_type(*args):
     parts=args[0]
@@ -81,6 +93,9 @@ def main():
                 
             case command if command.startswith('pwd'):
                 shell_pwd()
+                
+            case command if command.startswith('cd'):
+                shell_cd(command)
             
             case _:
                 if not execute_external_command(command):
