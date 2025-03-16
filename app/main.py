@@ -40,7 +40,6 @@ def shell_cd(*args):
         current=os.getcwd()
         
         try:
-            print(parts[1])
             os.chdir(os.path.expanduser(parts[1]))
             os.environ['OLDPWD']=current
         except FileNotFoundError:
