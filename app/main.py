@@ -126,14 +126,14 @@ class ExternalCommand(Command):
     def execute(self, args: List[str]) -> None:
         try:
             result = subprocess.run(
-                args,
+                args,  # Use args directly, no need to join and split again
                 capture_output=True,
                 text=True,
                 check=True
             )
             
             if result.stdout:
-                print(result.stdout, end="")
+                print(result.stdout, end="")  # Use end="" to preserve exact output
             if result.stderr:
                 print(result.stderr, end="", file=sys.stderr)
             sys.exit(result.returncode)
