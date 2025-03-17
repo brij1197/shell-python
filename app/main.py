@@ -129,14 +129,15 @@ class ExternalCommand(Command):
                 args,  # Use args directly, no need to join and split again
                 capture_output=True,
                 text=True,
-                check=True
+                check=False
             )
             
             if result.stdout:
                 print(result.stdout, end="")  # Use end="" to preserve exact output
             if result.stderr:
                 print(result.stderr, end="", file=sys.stderr)
-            sys.exit(result.returncode)
+            if result.returncode != 0:
+                sys.exit(result.returncode)
                 
         except subprocess.SubprocessError as e:
             print(f'Error executing {args[0]}: {str(e)}', file=sys.stderr)
