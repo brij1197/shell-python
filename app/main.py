@@ -168,19 +168,54 @@ class Shell:
     
     def run_command(self, input_line: str) -> None:
         try:
-            args = shlex.split(input_line, posix=True)
+        #     args = shlex.split(input_line, posix=True)
+        #     if not args:
+        #         return
+                
+        #     cmd_name = args[0]
+        #     command = self._get_command(cmd_name)
+            
+        #     if command:
+        #         command.execute(args)
+        #     else:
+        #         print(f"{cmd_name}: command not found")
+        # except ValueError as e:
+        #     print(f"Error: {str(e)}")
+        
+            command_parts=input_line.split('>')
+            command=command_parts[0].strip()
+            output_file=command_parts[1].strip() if len(command_parts) > 1 else None
+            
+            if command.endswith('1'):
+                command=command[:-1].strip()
+                
+            args=shlex.split(command, posix=True)
             if not args:
                 return
-                
-            cmd_name = args[0]
-            command = self._get_command(cmd_name)
             
-            if command:
-                command.execute(args)
+            cmd_name=args[0]
+            command_obj=self._get_command(cmd_name)
+            
+            if command_obj:
+                if output_file:
+                    original_stdout=sys.stdout
+                    try:
+                        with open(output_file, 'w') as f:
+                            sys.stdout=f
+                            command_obj.execute(args)
+                    finally:
+                        sys.stdout=original_stdout
+                else:
+                    command_obj.execute(args)
             else:
                 print(f"{cmd_name}: command not found")
+        
         except ValueError as e:
             print(f"Error: {str(e)}")
+        
+        except IOError as e:
+            print(f"Error: {str(e)}")
+            
     
     def run(self)->None:
         while True:
