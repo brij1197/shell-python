@@ -40,18 +40,17 @@ class Echo(Command):
         if len(args) == 1:
             print()
             return
-        
-        result=[]
-        for arg in args[1:]:
-            if arg.startswith("'") and arg.endswith("'"):
-                # For single-quoted strings, preserve exact content
-                result.append(arg[1:-1])
-            else:
-                # For unquoted strings, use as is
-                result.append(arg)
-        
-        # Join with a single space between arguments
-        print(" ".join(result))
+
+        message = " ".join(args[1:])
+
+        if message.startswith("'") and message.endswith("'"):
+            print(message[1:-1])
+        else:
+            try:
+                parsed = shlex.split(message)
+                print(" ".join(parsed))
+            except ValueError as e:
+                print(f"echo: error: {str(e)}")
             
 class Pwd(Command):
     @property
