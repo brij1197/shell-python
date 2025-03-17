@@ -37,13 +37,16 @@ class Echo(Command):
         return "echo"
     
     def execute(self,args:List[str])->None:
-        args = shlex.split(args)
-        for i in range(len(args)):
-            if (args[i].startswith("'") and args[i].endswith("'")) or (
-                args[i].startswith('"') and args[i].endswith('"')
-            ):
-                args[i] = args[i][1:-1]  # Odstraníme obalující uvozovky
-        print(" ".join(args))
+        if len(args) == 1:
+            print()
+            return
+        
+        message = " ".join(args[1:])
+        try:
+            parsed = shlex.split(message)
+            print(" ".join(parsed))
+        except ValueError as e:
+            print(f"echo: error: {str(e)}")
             
 class Pwd(Command):
     @property
@@ -118,8 +121,10 @@ class ExternalCommand(Command):
     
     def execute(self,args:List[str]):
         try:
+            command=" ".join(args)
+            parsed_args = shlex.split(command)
             result=subprocess.run(
-                args,
+                parsed_args,
                 capture_output=True,
                 text=True,
                 check=True
