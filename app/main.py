@@ -43,14 +43,12 @@ class Echo(Command):
 
         message = " ".join(args[1:])
 
-        if message.startswith("'") and message.endswith("'"):
-            print(message[1:-1])
-        else:
-            try:
-                parsed = shlex.split(message)
-                print(" ".join(parsed))
-            except ValueError as e:
-                print(f"echo: error: {str(e)}")
+        try:
+            parsed = shlex.split(message, posix=True)
+            cleaned_output = "".join(parsed)
+            print(cleaned_output)
+        except ValueError as e:
+            print(f"echo: error: {str(e)}")
             
 class Pwd(Command):
     @property
