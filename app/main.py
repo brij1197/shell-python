@@ -44,8 +44,15 @@ class Echo(Command):
         try:
             message = " ".join(args[1:])
             parsed_args = shlex.split(message)
-            result = " ".join(parsed_args)
-            print(result)
+            result = []
+            for arg in parsed_args:
+                orig_arg = next((a for a in args[1:] if a.strip("'") == arg), arg)
+                if orig_arg.startswith("'") and orig_arg.endswith("'"):
+                    result.append(orig_arg[1:-1])
+                else:
+                    result.append(arg)
+            
+            print("".join(result))
         except ValueError as e:
             print(f"echo: error: {str(e)}")
         
