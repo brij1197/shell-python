@@ -44,10 +44,8 @@ class Echo(Command):
         result = []
         for arg in args[1:]:
             if arg.startswith("'") and arg.endswith("'"):
-                # For single-quoted strings, preserve exact content
                 result.append(arg[1:-1])
             else:
-                # For unquoted strings, use as is
                 result.append(arg)
         
         print(" ".join(result))
@@ -170,7 +168,7 @@ class Shell:
     
     def run_command(self, input_line: str) -> None:
         try:
-            args = shlex.split(input_line)
+            args = shlex.split(input_line, posix=True)
             if not args:
                 return
                 
