@@ -131,7 +131,7 @@ class ExternalCommand(Command):
             )
             
             if result.stdout:
-                print(result.stdout, end="")
+                print(result.stdout, end="", file=sys.stdout)
             if result.stderr:
                 print(result.stderr, end="", file=sys.stderr)
             if result.returncode != 0:
@@ -205,6 +205,7 @@ class Shell:
                             command_obj.execute(args)
                     finally:
                         sys.stdout=original_stdout
+                        sys.stdout.write("$ ")
                 else:
                     command_obj.execute(args)
             else:
