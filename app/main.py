@@ -53,7 +53,7 @@ class Echo(Command):
                 else:
                     result.append(arg)
             
-            print("".join(result))
+            print(" ".join(result))
         except ValueError as e:
             print(f"echo: error: {str(e)}")
         
