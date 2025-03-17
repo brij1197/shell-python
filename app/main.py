@@ -201,9 +201,6 @@ class Shell:
         
         except IOError as e:
             print(f"Error: {str(e)}")
-        
-        sys.stdout.write("$ ")
-        sys.stdout.flush()
             
     
     def run(self)->None:
