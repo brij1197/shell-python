@@ -123,9 +123,8 @@ class ExternalCommand(Command):
     
     def execute(self, args: List[str]) -> None:
         try:
-            command_path=self._command
             result = subprocess.run(
-                [command_path] + args[1:],
+                [self._command] + args[1:],
                 capture_output=True,
                 text=True,
                 check=False
@@ -157,6 +156,59 @@ class Shell:
     def get_builtin_commands()->List[str]:
         return ['exit','echo','pwd','type','cd']
     
+    def _split_command(self, input_line: str) -> tuple[list[str], str, str]:
+        res = [""]
+        current_quote = ""
+        i = 0
+        output_file = None
+        
+        while i < len(input_line):
+            c = input_line[i]
+            
+            if c == "\\":
+                if i + 1 >= len(input_line):
+                    break
+                ch = input_line[i + 1]
+                if current_quote == "'":
+                    res[-1] += c
+                elif current_quote == '"':
+                    if ch in ["\\", "$", '"', "\n"]:
+                        res[-1] += ch
+                    else:
+                        res[-1] += "\\" + ch
+                    i += 1
+                else:
+                    res[-1] += input_line[i + 1]
+                    i += 1
+            elif c in ['"', "'"]:
+                if current_quote == "":
+                    current_quote = c
+                elif current_quote == c:
+                    current_quote = ""
+                else:
+                    res[-1] += c
+            elif c == " " and current_quote == "":
+                if res[-1] != "":
+                    res.append("")
+            else:
+                res[-1] += c
+            i += 1
+        
+        if res[-1] == "":
+            res.pop()
+        
+        # Handle redirection
+        if "1>" in res:
+            idx = res.index("1>")
+            command_parts, output_file = res[:idx], res[idx + 1]
+        elif ">" in res:
+            idx = res.index(">")
+            command_parts, output_file = res[:idx], res[idx + 1]
+        else:
+            command_parts = res
+            
+        return command_parts, output_file
+    
     def _get_command(self,cmd_name:str)->Optional[Command]:
         if cmd_name in self._commands:
             return self._commands[cmd_name]
@@ -172,38 +224,30 @@ class Shell:
         return None
     
     def run_command(self, input_line: str) -> None:
-        try:        
-            command_parts=input_line.split('>')
-            command=command_parts[0].strip()
-            output_file=command_parts[1].strip() if len(command_parts) > 1 else None
-            
-            if command.endswith('1'):
-                command=command[:-1].strip()
-                
-            args=shlex.split(command, posix=True)
+        try:
+            args, output_file = self._split_command(input_line)
             if not args:
                 return
             
-            cmd_name=args[0]
-            command_obj=self._get_command(cmd_name)
-            
+            cmd_name = args[0]
+            command_obj = self._get_command(cmd_name)
+        
             if command_obj:
                 if output_file:
-                    original_stdout=sys.stdout
+                    original_stdout = sys.stdout
                     try:
                         with open(output_file, 'w') as f:
-                            sys.stdout=f
+                            sys.stdout = f
                             command_obj.execute(args)
                     finally:
-                        sys.stdout=original_stdout
+                        sys.stdout = original_stdout
                 else:
                     command_obj.execute(args)
             else:
                 print(f"{cmd_name}: command not found")
-        
+            
         except ValueError as e:
             print(f"Error: {str(e)}")
-        
         except IOError as e:
             print(f"Error: {str(e)}")
             
