@@ -114,12 +114,13 @@ class Cd(Command):
             print(f'cd: {path}: Permission denied')
         
 class ExternalCommand(Command):
-    def __init__(self, command: str):
+    def __init__(self, command: str, original_name:str):
         self._command = command
+        self._original_name=original_name
         
     @property
     def name(self) -> str:
-        return self._command
+        return self._original_name
     
     def execute(self, args: List[str]) -> None:
         try:
@@ -161,10 +162,10 @@ class Shell:
         current_quote = ""
         i = 0
         output_file = None
-        
+
         while i < len(input_line):
             c = input_line[i]
-            
+
             if c == "\\":
                 if i + 1 >= len(input_line):
                     break
@@ -193,10 +194,10 @@ class Shell:
             else:
                 res[-1] += c
             i += 1
-        
+
         if res[-1] == "":
             res.pop()
-        
+
         # Handle redirection
         if "1>" in res:
             idx = res.index("1>")
@@ -206,7 +207,7 @@ class Shell:
             command_parts, output_file = res[:idx], res[idx + 1]
         else:
             command_parts = res
-            
+
         return command_parts, output_file
     
     def _get_command(self,cmd_name:str)->Optional[Command]:
@@ -214,12 +215,12 @@ class Shell:
             return self._commands[cmd_name]
         
         if os.path.isfile(cmd_name) and os.access(cmd_name, os.X_OK):
-            return ExternalCommand(cmd_name)
+            return ExternalCommand(cmd_name,cmd_name)
         
         for path in os.environ.get("PATH", "").split(os.pathsep):
             cmd_path = os.path.join(path, cmd_name)
             if os.path.isfile(cmd_path) and os.access(cmd_path, os.X_OK):
-                return ExternalCommand(cmd_path)
+                return ExternalCommand(cmd_path,cmd_name)
         
         return None
     
