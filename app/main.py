@@ -124,23 +124,17 @@ class ExternalCommand(Command):
     
     def execute(self, args: List[str]) -> None:
         try:
-            exec_args = [self._original_name] + args[1:]
-            result = subprocess.run(
-                [self._command] + args[1:],
-                capture_output=True,
-                text=True,
-                check=False,
-                env=dict(os.environ, _COMMAND_NAME=self._original_name)
-            )
-            
-            if result.stdout:
-                print(result.stdout, end="", file=sys.stdout)
-            if result.stderr:
-                print(result.stderr, end="", file=sys.stderr)
-                sys.stderr.flush()
+            pid = os.fork()
+            if pid == 0:
+                exec_args = [self._original_name] + args[1:]
+                os.execv(self._command, exec_args)
+            else:
+                _, status = os.waitpid(pid, 0)
+                if status != 0:
+                    sys.exit(status >> 8)
                 
-        except subprocess.SubprocessError as e:
-            print(f'Error executing {args[0]}: {str(e)}', file=sys.stderr)
+        except OSError as e:
+            print(f'Error executing {self._original_name}: {str(e)}', file=sys.stderr)
             sys.stderr.flush()
 
 class Shell:
