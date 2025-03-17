@@ -47,14 +47,27 @@ class Echo(Command):
             # Parse the message using shlex
             parsed_args = shlex.split(message)
             
-            # Remove surrounding quotes from each argument if present
-            for i in range(len(parsed_args)):
-                if (parsed_args[i].startswith("'") and parsed_args[i].endswith("'")) or \
-                   (parsed_args[i].startswith('"') and parsed_args[i].endswith('"')):
-                    parsed_args[i] = parsed_args[i][1:-1]
+            result = []
+            original_args = args[1:]  # Store original arguments for reference
             
-            # Join the processed arguments with spaces
-            print(" ".join(parsed_args))
+            current_pos = 0
+            for parsed_arg in parsed_args:
+                # Find the corresponding original argument
+                while current_pos < len(original_args):
+                    orig = original_args[current_pos]
+                    current_pos += 1
+                    # Remove quotes if present
+                    unquoted = orig.strip("'").strip('"')
+                    if parsed_arg == unquoted:
+                        # If original was quoted, use its exact content
+                        if orig.startswith("'") and orig.endswith("'"):
+                            result.append(unquoted)
+                        else:
+                            # For unquoted args, use the parsed version
+                            result.append(parsed_arg)
+                        break
+            
+            print(" ".join(result))
         except ValueError as e:
             print(f"echo: error: {str(e)}")
         
