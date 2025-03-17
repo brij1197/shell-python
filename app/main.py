@@ -126,25 +126,21 @@ class ExternalCommand(Command):
     def execute(self, args: List[str]) -> None:
         try:
             pid = os.fork()
-            if pid == 0:  # Child process
-                # If stdout is redirected, set up the redirection
+            if pid == 0:  
                 if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.name != '<stdout>':
-                    # Duplicate the file descriptor
                     fd = os.open(sys.stdout.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-                    os.dup2(fd, 1)  # Redirect stdout to our file
-                    os.close(fd)     # Close the original fd
+                    os.dup2(fd, 1)
+                    os.close(fd)
                 
-                # Execute command with original name as argv[0]
                 exec_args = [self._original_name] + args[1:]
                 try:
                     os.execv(self._command, exec_args)
                 except OSError as e:
                     print(f'Error executing {self._original_name}: {str(e)}', file=sys.stderr)
                     sys.exit(1)
-            else:  # Parent process
+            else:
                 _, status = os.waitpid(pid, 0)
                 if status != 0:
-                    # Don't exit on error, just continue
                     pass
                 
         except OSError as e:
@@ -238,10 +234,10 @@ class Shell:
             args, output_file = self._split_command(input_line)
             if not args:
                 return
-                
+
             cmd_name = args[0]
             command_obj = self._get_command(cmd_name)
-            
+
             if command_obj:
                 original_stdout = sys.stdout
                 try:
@@ -254,7 +250,7 @@ class Shell:
                     sys.stdout = original_stdout
             else:
                 print(f"{cmd_name}: command not found")
-                
+
         except ValueError as e:
             print(f"Error: {str(e)}")
         except IOError as e:
