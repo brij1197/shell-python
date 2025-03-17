@@ -42,18 +42,19 @@ class Echo(Command):
             return
         
         try:
+            # Join all arguments after 'echo'
             message = " ".join(args[1:])
+            # Parse the message using shlex
             parsed_args = shlex.split(message)
-            result = []
-            for arg in parsed_args:
-                orig_arg = next((a for a in args[1:] if a.strip("'") == arg), arg)
-                if orig_arg.startswith("'") and orig_arg.endswith("'"):
-                    print(orig_arg[1:-1])
-                    result.append(orig_arg[1:-1])
-                else:
-                    result.append(arg)
             
-            print(" ".join(result))
+            # Remove surrounding quotes from each argument if present
+            for i in range(len(parsed_args)):
+                if (parsed_args[i].startswith("'") and parsed_args[i].endswith("'")) or \
+                   (parsed_args[i].startswith('"') and parsed_args[i].endswith('"')):
+                    parsed_args[i] = parsed_args[i][1:-1]
+            
+            # Join the processed arguments with spaces
+            print(" ".join(parsed_args))
         except ValueError as e:
             print(f"echo: error: {str(e)}")
         
