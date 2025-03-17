@@ -37,17 +37,7 @@ class Echo(Command):
         return "echo"
     
     def execute(self,args:List[str])->None:
-        if len(args) == 1:
-            print()
-            return
-
-        message = " ".join(args[1:])
-
-        try:
-            parsed = shlex.split(message, posix=True)  # Splitting correctly handles quoted strings
-            print(" ".join(parsed))  # Join parsed words back with spaces
-        except ValueError as e:
-            print(f"echo: error: {str(e)}")
+        print(args)
             
 class Pwd(Command):
     @property
