@@ -48,7 +48,7 @@ class Echo(Command):
                 output.append(arg[1:-1])
             else:
                 output.append(arg)
-        print("".join(output))
+        print(" ".join(output))
         
 class Pwd(Command):
     @property
