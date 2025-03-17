@@ -37,15 +37,14 @@ class Echo(Command):
         return "echo"
     
     def execute(self,args:List[str])->None:
-        if len(args) == 1:
-            print()
-            return
-        
-        try:
-            if args[1] == '-n':
-                print(' '.join(args[2:]), end='')
-            else:
-                print(' '.join(args[1:]))
+        args = shlex.split(args)
+        for i in range(len(args)):
+            if (args[i].startswith("'") and args[i].endswith("'")) or (
+                args[i].startswith('"') and args[i].endswith('"')
+            ):
+                args[i] = args[i][1:-1]  # Odstraníme obalující uvozovky
+        print(" ".join(args))
+            
 class Pwd(Command):
     @property
     def name(self)->str:
