@@ -42,32 +42,29 @@ class Echo(Command):
             return
         
         try:
-            # Join all arguments after 'echo'
-            message = " ".join(args[1:])
-            # Parse the message using shlex
-            parsed_args = shlex.split(message)
+            # Get the original input after 'echo'
+            original_input = " ".join(args[1:])
+            # Parse using shlex
+            parsed_args = shlex.split(original_input)
             
             result = []
-            original_args = args[1:]  # Store original arguments for reference
-            
-            current_pos = 0
-            for parsed_arg in parsed_args:
-                # Find the corresponding original argument
-                while current_pos < len(original_args):
-                    orig = original_args[current_pos]
-                    current_pos += 1
-                    # Remove quotes if present
-                    unquoted = orig.strip("'").strip('"')
-                    if parsed_arg == unquoted:
-                        # If original was quoted, use its exact content
+            for arg in parsed_args:
+                # Find the original argument that corresponds to this parsed arg
+                for orig in args[1:]:
+                    if orig.strip("'").strip('"') == arg:
                         if orig.startswith("'") and orig.endswith("'"):
-                            result.append(unquoted)
+                            # For single-quoted strings, preserve internal spacing
+                            result.append(orig[1:-1])
                         else:
-                            # For unquoted args, use the parsed version
-                            result.append(parsed_arg)
+                            # For unquoted strings, use as is
+                            result.append(arg)
                         break
+                else:
+                    # If no match found, use the parsed arg
+                    result.append(arg)
             
             print(" ".join(result))
+            
         except ValueError as e:
             print(f"echo: error: {str(e)}")
         
