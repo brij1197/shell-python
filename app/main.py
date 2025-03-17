@@ -126,7 +126,12 @@ class ExternalCommand(Command):
     def execute(self, args: List[str]) -> None:
         try:
             pid = os.fork()
-            if pid == 0:  
+            if pid == 0:
+                if isinstance(sys.stderr, io.TextIOWrapper) and sys.stderr.name != '<stderr>':
+                    fd = os.open(sys.stderr.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+                    os.dup2(fd, 2)
+                    os.close(fd)
+                
                 if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.name != '<stdout>':
                     fd = os.open(sys.stdout.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
                     os.dup2(fd, 1)
@@ -167,7 +172,9 @@ class Shell:
         res = [""]
         current_quote = ""
         i = 0
-        output_file = None
+        # output_file = None
+        stdout_file=None
+        stderr_file=None
         
         while i < len(input_line):
             c = input_line[i]
@@ -204,16 +211,19 @@ class Shell:
         if res[-1] == "":
             res.pop()
         
-        if "1>" in res:
+        if "2>" in res:
+            idx=res.index("2>")
+            command_parts,stderr_file=res[:idx], res[idx+1]
+        elif "1>" in res:
             idx = res.index("1>")
-            command_parts, output_file = res[:idx], res[idx + 1]
+            command_parts, stdout_file = res[:idx], res[idx + 1]
         elif ">" in res:
             idx = res.index(">")
-            command_parts, output_file = res[:idx], res[idx + 1]
+            command_parts, stdout_file = res[:idx], res[idx + 1]
         else:
             command_parts = res
             
-        return command_parts, output_file
+        return command_parts, stdout_file, stderr_file
     
     def _get_command(self,cmd_name:str)->Optional[Command]:
         if cmd_name in self._commands:
@@ -231,7 +241,7 @@ class Shell:
     
     def run_command(self, input_line: str) -> None:
         try:
-            args, output_file = self._split_command(input_line)
+            args, stdout_file, stderr_file = self._split_command(input_line)
             if not args:
                 return
 
@@ -240,14 +250,20 @@ class Shell:
 
             if command_obj:
                 original_stdout = sys.stdout
+                original_stderr = sys.stderr
                 try:
-                    if output_file:
-                        sys.stdout = open(output_file, 'w')
+                    if stdout_file:
+                        sys.stdout = open(stdout_file, 'w')
+                    if stderr_file:
+                        sys.stderr = open(stderr_file , 'w')
                     command_obj.execute(args)
                 finally:
-                    if output_file:
+                    if stdout_file:
                         sys.stdout.close()
+                    if stderr_file:
+                        sys.stderr.close()
                     sys.stdout = original_stdout
+                    sys.stderr = original_stderr
             else:
                 print(f"{cmd_name}: command not found")
 
