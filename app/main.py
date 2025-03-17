@@ -41,14 +41,13 @@ class Echo(Command):
             print()
             return
 
-        result = []
-        for arg in args[1:]:
-            if arg.startswith("'") and arg.endswith("'"):
-                result.append(arg[1:-1])  # Remove surrounding single quotes
-            else:
-                result.append(arg)
+        message = " ".join(args[1:])
 
-        print(" ".join(result))
+        try:
+            parsed = shlex.split(message, posix=True)  # Splitting correctly handles quoted strings
+            print(" ".join(parsed))  # Join parsed words back with spaces
+        except ValueError as e:
+            print(f"echo: error: {str(e)}")
             
 class Pwd(Command):
     @property
