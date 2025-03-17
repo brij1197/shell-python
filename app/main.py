@@ -40,11 +40,15 @@ class Echo(Command):
             print()
             return
         
-        message=" ".join(args[1:])
-        if message.startswith("'") and message.endswith("'"):
-            print(message[1:-1])
-        else:
-            print(message)
+        output=[]
+        current_part=""
+        
+        for arg in args[1:]:
+            if arg.startswith("'") and arg.endswith("'"):
+                output.append(arg[1:-1])
+            else:
+                output.append(arg)
+        print("".join(output))
         
 class Pwd(Command):
     @property
