@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import subprocess
+import shlex
 from typing import List, Optional
 
 class Command(ABC):
@@ -36,17 +37,17 @@ class Echo(Command):
         return "echo"
     
     def execute(self,args:List[str])->None:
-        if len(args)==1:
+        if len(args) == 1:
             print()
             return
         
-        message = " ".join(args[1:])
-
-        # Remove any surrounding single quotes from the entire message
-        if message.startswith("'") and message.endswith("'"):
-            message = message[1:-1]
-            
-        print(message)
+        try:
+            message = " ".join(args[1:])
+            parsed_args = shlex.split(message)
+            result = " ".join(parsed_args)
+            print(result)
+        except ValueError as e:
+            print(f"echo: error: {str(e)}")
         
 class Pwd(Command):
     @property
