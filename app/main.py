@@ -42,32 +42,10 @@ class Echo(Command):
             return
         
         try:
-            # Get the original input after 'echo'
-            original_input = " ".join(args[1:])
-            # Parse using shlex
-            parsed_args = shlex.split(original_input)
-            
-            result = []
-            for arg in parsed_args:
-                # Find the original argument that corresponds to this parsed arg
-                for orig in args[1:]:
-                    if orig.strip("'").strip('"') == arg:
-                        if orig.startswith("'") and orig.endswith("'"):
-                            # For single-quoted strings, preserve internal spacing
-                            result.append(orig[1:-1])
-                        else:
-                            # For unquoted strings, use as is
-                            result.append(arg)
-                        break
-                else:
-                    # If no match found, use the parsed arg
-                    result.append(arg)
-            
-            print(" ".join(result))
-            
-        except ValueError as e:
-            print(f"echo: error: {str(e)}")
-        
+            if args[1] == '-n':
+                print(' '.join(args[2:]), end='')
+            else:
+                print(' '.join(args[1:]))
 class Pwd(Command):
     @property
     def name(self)->str:
