@@ -127,15 +127,13 @@ class ExternalCommand(Command):
         try:
             pid = os.fork()
             if pid == 0:  # Child process
-                # If stdout is redirected to a file, set it up
-                if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.name != '<stdout>':
-                    # Close the original stdout
-                    os.close(1)
-                    # Open the file for writing
-                    os.open(sys.stdout.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-                
+                # Execute command with original name as argv[0]
                 exec_args = [self._original_name] + args[1:]
-                os.execv(self._command, exec_args)
+                try:
+                    os.execv(self._command, exec_args)
+                except OSError as e:
+                    print(f'Error executing {self._original_name}: {str(e)}', file=sys.stderr)
+                    sys.exit(1)
             else:  # Parent process
                 _, status = os.waitpid(pid, 0)
                 if status != 0:
@@ -166,10 +164,10 @@ class Shell:
         current_quote = ""
         i = 0
         output_file = None
-
+        
         while i < len(input_line):
             c = input_line[i]
-
+            
             if c == "\\":
                 if i + 1 >= len(input_line):
                     break
@@ -198,11 +196,10 @@ class Shell:
             else:
                 res[-1] += c
             i += 1
-
+        
         if res[-1] == "":
             res.pop()
-
-        # Handle redirection
+        
         if "1>" in res:
             idx = res.index("1>")
             command_parts, output_file = res[:idx], res[idx + 1]
@@ -211,7 +208,7 @@ class Shell:
             command_parts, output_file = res[:idx], res[idx + 1]
         else:
             command_parts = res
-
+            
         return command_parts, output_file
     
     def _get_command(self,cmd_name:str)->Optional[Command]:
@@ -238,16 +235,15 @@ class Shell:
             command_obj = self._get_command(cmd_name)
         
             if command_obj:
-                if output_file:
-                    original_stdout = sys.stdout
-                    try:
-                        with open(output_file, 'w') as f:
-                            sys.stdout = f
-                            command_obj.execute(args)
-                    finally:
-                        sys.stdout = original_stdout
-                else:
+                original_stdout = sys.stdout
+                try:
+                    if output_file:
+                        sys.stdout = open(output_file, 'w')
                     command_obj.execute(args)
+                finally:
+                    if output_file:
+                        sys.stdout.close()
+                    sys.stdout = original_stdout
             else:
                 print(f"{cmd_name}: command not found")
             
