@@ -144,7 +144,8 @@ class ExternalCommand(Command):
             else:  # Parent process
                 _, status = os.waitpid(pid, 0)
                 if status != 0:
-                    sys.exit(status >> 8)
+                    # Don't exit on error, just continue
+                    pass
                 
         except OSError as e:
             print(f'Error executing {self._original_name}: {str(e)}', file=sys.stderr)
