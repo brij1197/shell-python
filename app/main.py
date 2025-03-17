@@ -127,6 +127,13 @@ class ExternalCommand(Command):
         try:
             pid = os.fork()
             if pid == 0:  # Child process
+                # If stdout is redirected, set up the redirection
+                if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.name != '<stdout>':
+                    # Duplicate the file descriptor
+                    fd = os.open(sys.stdout.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+                    os.dup2(fd, 1)  # Redirect stdout to our file
+                    os.close(fd)     # Close the original fd
+                
                 # Execute command with original name as argv[0]
                 exec_args = [self._original_name] + args[1:]
                 try:
@@ -230,10 +237,10 @@ class Shell:
             args, output_file = self._split_command(input_line)
             if not args:
                 return
-            
+                
             cmd_name = args[0]
             command_obj = self._get_command(cmd_name)
-        
+            
             if command_obj:
                 original_stdout = sys.stdout
                 try:
@@ -246,7 +253,7 @@ class Shell:
                     sys.stdout = original_stdout
             else:
                 print(f"{cmd_name}: command not found")
-            
+                
         except ValueError as e:
             print(f"Error: {str(e)}")
         except IOError as e:
