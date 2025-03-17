@@ -36,7 +36,15 @@ class Echo(Command):
         return "echo"
     
     def execute(self,args:List[str])->None:
-        print(" ".join(args[1:]))
+        if len(args)==1:
+            print()
+            return
+        
+        message=" ".join(args[1:])
+        if message.startswith("'") and message.endswith("'"):
+            print(message[1:-1])
+        else:
+            print(message)
         
 class Pwd(Command):
     @property
