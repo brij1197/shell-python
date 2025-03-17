@@ -40,7 +40,8 @@ class Echo(Command):
             print()
             return
         
-                
+        message = " ".join(args[1:])
+
         # Remove any surrounding single quotes from the entire message
         if message.startswith("'") and message.endswith("'"):
             message = message[1:-1]
