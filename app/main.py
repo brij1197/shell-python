@@ -41,12 +41,12 @@ class Echo(Command):
             print()
             return
 
-        message = " ".join(args[1:])
+        message = " ".join(args[1:])  # Preserve spaces in input
 
+    # Use shlex.split() but preserve spaces within quotes
         try:
-            parsed = shlex.split(message, posix=True)
-            cleaned_output = "".join(parsed)
-            print(cleaned_output)
+            parsed = shlex.split(message, posix=True)  
+            print(" ".join(parsed))  # Ensure proper spacing
         except ValueError as e:
             print(f"echo: error: {str(e)}")
             
