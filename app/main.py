@@ -41,14 +41,14 @@ class Echo(Command):
             print()
             return
 
-        message = " ".join(args[1:])  # Preserve spaces in input
+        result = []
+        for arg in args[1:]:
+            if arg.startswith("'") and arg.endswith("'"):
+                result.append(arg[1:-1])  # Remove surrounding single quotes
+            else:
+                result.append(arg)
 
-    # Use shlex.split() but preserve spaces within quotes
-        try:
-            parsed = shlex.split(message, posix=True)  
-            print(" ".join(parsed))  # Ensure proper spacing
-        except ValueError as e:
-            print(f"echo: error: {str(e)}")
+        print(" ".join(result))
             
 class Pwd(Command):
     @property
