@@ -124,11 +124,13 @@ class ExternalCommand(Command):
     
     def execute(self, args: List[str]) -> None:
         try:
+            exec_args = [self._original_name] + args[1:]
             result = subprocess.run(
                 [self._command] + args[1:],
                 capture_output=True,
                 text=True,
-                check=False
+                check=False,
+                env=dict(os.environ, _COMMAND_NAME=self._original_name)
             )
             
             if result.stdout:
@@ -215,7 +217,7 @@ class Shell:
             return self._commands[cmd_name]
         
         if os.path.isfile(cmd_name) and os.access(cmd_name, os.X_OK):
-            return ExternalCommand(cmd_name,cmd_name)
+            return ExternalCommand(cmd_name,os.path.basename(cmd_name))
         
         for path in os.environ.get("PATH", "").split(os.pathsep):
             cmd_path = os.path.join(path, cmd_name)
