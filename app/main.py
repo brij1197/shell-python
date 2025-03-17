@@ -134,12 +134,14 @@ class ExternalCommand(Command):
                 print(result.stdout, end="", file=sys.stdout)
             if result.stderr:
                 print(result.stderr, end="", file=sys.stderr)
+                sys.stderr.flush()
+                
             if result.returncode != 0:
-                sys.exit(result.returncode)
+                return
                 
         except subprocess.SubprocessError as e:
             print(f'Error executing {args[0]}: {str(e)}', file=sys.stderr)
-            sys.exit(1)
+            sys.stderr.flush()
 
 class Shell:
     def __init__(self):
