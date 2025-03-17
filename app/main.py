@@ -48,6 +48,7 @@ class Echo(Command):
             for arg in parsed_args:
                 orig_arg = next((a for a in args[1:] if a.strip("'") == arg), arg)
                 if orig_arg.startswith("'") and orig_arg.endswith("'"):
+                    print(orig_arg[1:-1])
                     result.append(orig_arg[1:-1])
                 else:
                     result.append(arg)
