@@ -205,7 +205,6 @@ class Shell:
                             command_obj.execute(args)
                     finally:
                         sys.stdout=original_stdout
-                        sys.stdout.write("$ ")
                 else:
                     command_obj.execute(args)
             else:
