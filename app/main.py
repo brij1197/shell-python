@@ -40,15 +40,12 @@ class Echo(Command):
             print()
             return
         
-        output=[]
-        current_part=""
-        
-        for arg in args[1:]:
-            if arg.startswith("'") and arg.endswith("'"):
-                output.append(arg[1:-1])
-            else:
-                output.append(arg)
-        print(" ".join(output))
+                
+        # Remove any surrounding single quotes from the entire message
+        if message.startswith("'") and message.endswith("'"):
+            message = message[1:-1]
+            
+        print(message)
         
 class Pwd(Command):
     @property
