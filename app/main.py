@@ -33,11 +33,24 @@ class Exit(Command):
 
 class Echo(Command):
     @property
-    def name(self)->str:
+    def name(self) -> str:
         return "echo"
     
-    def execute(self,args:List[str])->None:
-        print(args)
+    def execute(self, args: List[str]) -> None:
+        if len(args) == 1:
+            print()
+            return
+        
+        result = []
+        for arg in args[1:]:
+            if arg.startswith("'") and arg.endswith("'"):
+                # For single-quoted strings, preserve exact content
+                result.append(arg[1:-1])
+            else:
+                # For unquoted strings, use as is
+                result.append(arg)
+        
+        print(" ".join(result))
             
 class Pwd(Command):
     @property
@@ -103,33 +116,30 @@ class Cd(Command):
             print(f'cd: {path}: Permission denied')
         
 class ExternalCommand(Command):
-    def __init__(self,command:str):
-        self._command=command
+    def __init__(self, command: str):
+        self._command = command
         
     @property
-    def name(self)->str:
+    def name(self) -> str:
         return self._command
     
-    def execute(self,args:List[str]):
+    def execute(self, args: List[str]) -> None:
         try:
-            command=" ".join(args)
-            parsed_args = shlex.split(command)
-            result=subprocess.run(
-                parsed_args,
+            result = subprocess.run(
+                args,
                 capture_output=True,
                 text=True,
                 check=True
             )
             
             if result.stdout:
-                print(result.stdout.strip())
+                print(result.stdout, end="")
             if result.stderr:
-                print(result.stderr.rstrip(), file=sys.stderr)
-            if result.returncode!=0:
-                sys.exit(result.returncode)
+                print(result.stderr, end="", file=sys.stderr)
+            sys.exit(result.returncode)
                 
         except subprocess.SubprocessError as e:
-            print(f'Error executing {args[0]}:str{e}',file=sys.stderr)
+            print(f'Error executing {args[0]}: {str(e)}', file=sys.stderr)
             sys.exit(1)
 
 class Shell:
@@ -148,10 +158,6 @@ class Shell:
     def get_builtin_commands()->List[str]:
         return ['exit','echo','pwd','type','cd']
     
-    def _parse_command(self,input_line:str)->tuple[str,List[str]]:
-        parts=input_line.strip().split()
-        return parts[0] if parts else "",parts
-    
     def _get_command(self,cmd_name:str)->Optional[Command]:
         if cmd_name in self._commands:
             return self._commands[cmd_name]
@@ -162,15 +168,20 @@ class Shell:
         return None
     
     def run_command(self, input_line: str) -> None:
-        cmd_name,args=self._parse_command(input_line)
-        if not cmd_name:
-            return
-        
-        command=self._get_command(cmd_name)
-        if command:
-            command.execute(args)
-        else:
-            print(f'{cmd_name}: command not found')
+        try:
+            args = shlex.split(input_line)
+            if not args:
+                return
+                
+            cmd_name = args[0]
+            command = self._get_command(cmd_name)
+            
+            if command:
+                command.execute(args)
+            else:
+                print(f"{cmd_name}: command not found")
+        except ValueError as e:
+            print(f"Error: {str(e)}")
     
     def run(self)->None:
         while True:
