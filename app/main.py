@@ -123,8 +123,9 @@ class ExternalCommand(Command):
     
     def execute(self, args: List[str]) -> None:
         try:
+            command_path=self._command
             result = subprocess.run(
-                args,
+                [command_path] + args[1:],
                 capture_output=True,
                 text=True,
                 check=False
@@ -135,9 +136,6 @@ class ExternalCommand(Command):
             if result.stderr:
                 print(result.stderr, end="", file=sys.stderr)
                 sys.stderr.flush()
-                
-            if result.returncode != 0:
-                return
                 
         except subprocess.SubprocessError as e:
             print(f'Error executing {args[0]}: {str(e)}', file=sys.stderr)
@@ -163,8 +161,13 @@ class Shell:
         if cmd_name in self._commands:
             return self._commands[cmd_name]
         
-        if path:=shutil.which(cmd_name):
-            return ExternalCommand(path)
+        if os.path.isfile(cmd_name) and os.access(cmd_name, os.X_OK):
+            return ExternalCommand(cmd_name)
+        
+        for path in os.environ.get("PATH", "").split(os.pathsep):
+            cmd_path = os.path.join(path, cmd_name)
+            if os.path.isfile(cmd_path) and os.access(cmd_path, os.X_OK):
+                return ExternalCommand(cmd_path)
         
         return None
     
