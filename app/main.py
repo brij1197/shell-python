@@ -167,21 +167,7 @@ class Shell:
         return None
     
     def run_command(self, input_line: str) -> None:
-        try:
-        #     args = shlex.split(input_line, posix=True)
-        #     if not args:
-        #         return
-                
-        #     cmd_name = args[0]
-        #     command = self._get_command(cmd_name)
-            
-        #     if command:
-        #         command.execute(args)
-        #     else:
-        #         print(f"{cmd_name}: command not found")
-        # except ValueError as e:
-        #     print(f"Error: {str(e)}")
-        
+        try:        
             command_parts=input_line.split('>')
             command=command_parts[0].strip()
             output_file=command_parts[1].strip() if len(command_parts) > 1 else None
@@ -215,6 +201,9 @@ class Shell:
         
         except IOError as e:
             print(f"Error: {str(e)}")
+        
+        sys.stdout.write("$ ")
+        sys.stdout.flush()
             
     
     def run(self)->None:
