@@ -4,6 +4,7 @@ import sys
 import shutil
 import subprocess
 import shlex
+import io
 from typing import List, Optional
 
 class Command(ABC):
@@ -125,10 +126,17 @@ class ExternalCommand(Command):
     def execute(self, args: List[str]) -> None:
         try:
             pid = os.fork()
-            if pid == 0:
+            if pid == 0:  # Child process
+                # If stdout is redirected to a file, set it up
+                if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.name != '<stdout>':
+                    # Close the original stdout
+                    os.close(1)
+                    # Open the file for writing
+                    os.open(sys.stdout.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+                
                 exec_args = [self._original_name] + args[1:]
                 os.execv(self._command, exec_args)
-            else:
+            else:  # Parent process
                 _, status = os.waitpid(pid, 0)
                 if status != 0:
                     sys.exit(status >> 8)
