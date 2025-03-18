@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 import os
 import sys
 import shutil
-import subprocess
-import shlex
 import io
+import readline
 from typing import List, Optional
 
 class Command(ABC):
@@ -164,6 +163,23 @@ class ExternalCommand(Command):
             print(f'Error executing {self._original_name}: {str(e)}', file=sys.stderr)
             sys.stderr.flush()
 
+
+class CommandCompleter:
+    def __init__(self, commands):
+        self.commands=commands
+    
+    def complete(self, text, state):
+        if state==0:
+            if text:
+                self.matches= [cmd + ' ' for cmd in self.commands if cmd.startswith(text)]
+            else:
+                self.matches= [cmd + ' ' for cmd in self.commands]
+        try:
+            return self.matches[state]
+        except IndexError:
+            return None
+        
+
 class Shell:
     def __init__(self):
         self._commands={
@@ -175,6 +191,12 @@ class Shell:
                 Type()
             ] 
         }
+        self._setup_completion()
+        
+    def _setup_completion(self):
+        readline.parse_and_bind('tab: complete')
+        readline.set_completer(CommandCompleter(self._commands.keys()).complete)
+        readline.set_completer_delims(' \t\n')
     
     @staticmethod
     def get_builtin_commands()->List[str]:
@@ -302,6 +324,7 @@ class Shell:
         while True:
             try:
                 sys.stdout.write("$ ")
+                sys.stdout.flush()
                 command=input().strip()
                 self.run_command(command)
             except EOFError:
