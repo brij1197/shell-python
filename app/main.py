@@ -214,7 +214,7 @@ class Shell:
         while i< len(res):
             if res[i] in [">>", "1>>"]:
                 if i+1 < len(res):
-                    stdout_info=res([i+1],True)
+                    stdout_info=(res[i+1],True)
                     res=res[:i]+res[i+2:]
                     continue
             elif res[i]=="2>>":
@@ -224,7 +224,7 @@ class Shell:
                     continue
             elif res[i] in [">","1>"]:
                 if i+1<len(res):
-                    stdout_info=res([i+1],False)
+                    stdout_info=(res[i+1],False)
                     res=res[:i]+res[i+2:]
                     continue
             elif res[i]=="2>":
