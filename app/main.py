@@ -172,9 +172,8 @@ class Shell:
         res = [""]
         current_quote = ""
         i = 0
-        # output_file = None
-        stdout_file=None
-        stderr_file=None
+        stdout_info=(None,False)
+        stderr_info=(None,False)
         
         while i < len(input_line):
             c = input_line[i]
@@ -211,19 +210,31 @@ class Shell:
         if res[-1] == "":
             res.pop()
         
-        if "2>" in res:
-            idx=res.index("2>")
-            command_parts,stderr_file=res[:idx], res[idx+1]
-        elif "1>" in res:
-            idx = res.index("1>")
-            command_parts, stdout_file = res[:idx], res[idx + 1]
-        elif ">" in res:
-            idx = res.index(">")
-            command_parts, stdout_file = res[:idx], res[idx + 1]
-        else:
-            command_parts = res
-            
-        return command_parts, stdout_file, stderr_file
+        i=0
+        while i< len(res):
+            if res[i] in [">>", "1>>"]:
+                if i+1 < len(res):
+                    stdout_info=res([i+1],True)
+                    res=res[:i]+res[i+2:]
+                    continue
+            elif res[i]=="2>>":
+                if i+1<len(res):
+                    stderr_info=(res[i+1],True)
+                    res=res[:i]+res[i+2:]
+                    continue
+            elif res[i] in [">","1>"]:
+                if i+1<len(res):
+                    stdout_info=res([i+1],False)
+                    res=res[:i]+res[i+2:]
+                    continue
+            elif res[i]=="2>":
+                if i+1<len(res):
+                    stderr_info=(res[i+1],False)
+                    res=res[:i]+res[i+2:]
+                    continue
+            i+=1
+
+        return res, stdout_info, stderr_info
     
     def _get_command(self,cmd_name:str)->Optional[Command]:
         if cmd_name in self._commands:
@@ -241,7 +252,7 @@ class Shell:
     
     def run_command(self, input_line: str) -> None:
         try:
-            args, stdout_file, stderr_file = self._split_command(input_line)
+            args, stdout_info, stderr_info = self._split_command(input_line)
             if not args:
                 return
 
@@ -252,15 +263,17 @@ class Shell:
                 original_stdout = sys.stdout
                 original_stderr = sys.stderr
                 try:
-                    if stdout_file:
-                        sys.stdout = open(stdout_file, 'w')
-                    if stderr_file:
-                        sys.stderr = open(stderr_file , 'w')
+                    if stdout_info[0]:
+                        mode='a' if stdout_info[1] else 'w'
+                        sys.stdout=open(stdout_info[0], mode)
+                    if stderr_info[0]:
+                        mode='a' if stderr_info[1] else 'w'
+                        sys.stderr=open(stderr_info[0], mode)
                     command_obj.execute(args)
                 finally:
-                    if stdout_file:
+                    if stdout_info[0]:
                         sys.stdout.close()
-                    if stderr_file:
+                    if stderr_info[0]:
                         sys.stderr.close()
                     sys.stdout = original_stdout
                     sys.stderr = original_stderr
