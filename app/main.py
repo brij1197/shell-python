@@ -128,12 +128,24 @@ class ExternalCommand(Command):
             pid = os.fork()
             if pid == 0:
                 if isinstance(sys.stderr, io.TextIOWrapper) and sys.stderr.name != '<stderr>':
-                    fd = os.open(sys.stderr.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+                    mode = os.O_WRONLY | os.O_CREAT
+                    if isinstance(sys.stderr, io.TextIOWrapper) and hasattr(sys.stderr, 'mode'):
+                        if 'a' in sys.stderr.mode:
+                            mode |= os.O_APPEND
+                        else:
+                            mode |= os.O_TRUNC
+                    fd = os.open(sys.stderr.name, mode)
                     os.dup2(fd, 2)
                     os.close(fd)
                 
                 if isinstance(sys.stdout, io.TextIOWrapper) and sys.stdout.name != '<stdout>':
-                    fd = os.open(sys.stdout.name, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+                    mode = os.O_WRONLY | os.O_CREAT
+                    if isinstance(sys.stdout, io.TextIOWrapper) and hasattr(sys.stdout, 'mode'):
+                        if 'a' in sys.stdout.mode:
+                            mode |= os.O_APPEND
+                        else:
+                            mode |= os.O_TRUNC
+                    fd = os.open(sys.stdout.name, mode)
                     os.dup2(fd, 1)
                     os.close(fd)
                 
