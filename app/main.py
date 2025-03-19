@@ -194,12 +194,6 @@ class CommandCompleter:
     
     
     def complete(self, text, state):
-        # if state==0:
-        #     if text:
-        #         self.matches= [cmd + ' ' for cmd in self.all_executables if cmd.startswith(text)]
-        #     else:
-        #         self.matches= [cmd + ' ' for cmd in self.all_executables]
-        
         if text!=self.current_buffer:
             self.current_buffer=text
             self.last_tab_count=0
@@ -217,6 +211,7 @@ class CommandCompleter:
                 print()
                 print(" ".join(self.matches))
                 print(f"$ {text}", end="")
+                sys.stdout.flush()
                 return text
         try:
             match=self.matches[state]
