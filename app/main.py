@@ -208,9 +208,12 @@ class CommandCompleter:
                 sys.stdout.flush()
                 return text
             elif self.last_tab_count==2:
-                print()
-                sys.stdout.write(" ".join(self.matches))
-                sys.stdout.write(f"$ {text}", end="")
+                sys.stdout.write('\n')
+                sys.stdout.write(f"{self.matches[0]}")
+                for match in self.matches[1:]:
+                    sys.stdout.write(f"  {match}")
+                sys.stdout.write('\n')
+                sys.stdout.write(f"$ {text}")
                 sys.stdout.flush()
                 return text
         try:
