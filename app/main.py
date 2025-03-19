@@ -191,15 +191,8 @@ class CommandCompleter:
     
     def _get_matches(self,text):
         return sorted([cmd for cmd in self.all_executables if cmd.startswith(text)])
-    
-    def _display_matches(self, substitution, matches, longest_match_length):
-        print()
-        print("  ".join(matches))
-        sys.stdout.write(f"$ {substitution}")
-        sys.stdout.flush()
-        readline.redisplay()
-        
-        
+
+  
     def complete(self, text, state):
         if text!=self.current_buffer:
             self.current_buffer=text
@@ -215,6 +208,13 @@ class CommandCompleter:
                 sys.stdout.flush()
                 return text
             elif self.last_tab_count==2:
+                readline.insert_text('')
+                readline.redisplay()
+                matches_str = "  ".join(self.matches)
+                os.write(1, b"\n")
+                os.write(1, matches_str.encode())
+                os.write(1, b"\n")
+                os.write(1, f"$ {text}".encode())
                 return text
         try:
             match=self.matches[state]
@@ -241,7 +241,6 @@ class Shell:
         self.completer=CommandCompleter(self._commands.keys())
         readline.set_completer(self.completer.complete)
         readline.set_completer_delims(' \t\n')
-        readline.set_completion_display_matches_hook(self.completer._display_matches)
     
     @staticmethod
     def get_builtin_commands()->List[str]:
