@@ -167,13 +167,31 @@ class ExternalCommand(Command):
 class CommandCompleter:
     def __init__(self, commands):
         self.commands=commands
+        self.all_executables=self._get_all_executables()
+        
+    def _get_all_executables(self):
+        executables=set(self.commands)
+        paths=os.environ.get("PATH","").split(os.pathsep)
+        
+        for path in paths:
+            if not os.path.isdir(path):
+                continue
+            
+            try:
+                for file in os.listdir(path):
+                    file_path=os.path.join(path,file)
+                    if os.path.isfile(file_path) and os.access(file_path, os.X_OK):
+                        executables.add(file)
+            except OSError:
+                continue
+        return executables
     
     def complete(self, text, state):
         if state==0:
             if text:
-                self.matches= [cmd + ' ' for cmd in self.commands if cmd.startswith(text)]
+                self.matches= [cmd + ' ' for cmd in self.all_executables if cmd.startswith(text)]
             else:
-                self.matches= [cmd + ' ' for cmd in self.commands]
+                self.matches= [cmd + ' ' for cmd in self.all_executables]
         try:
             return self.matches[state]
         except IndexError:
