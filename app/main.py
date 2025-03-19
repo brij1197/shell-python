@@ -168,6 +168,9 @@ class CommandCompleter:
     def __init__(self, commands):
         self.commands=commands
         self.all_executables=self._get_all_executables()
+        self.matches=[]
+        self.current_buffer=""
+        self.last_tab_count=0
         
     def _get_all_executables(self):
         executables=set(self.commands)
@@ -186,14 +189,38 @@ class CommandCompleter:
                 continue
         return executables
     
+    def _get_matches(self,text):
+        return sorted([cmd for cmd in self.all_executables if cmd.startswith(text)])
+    
+    
     def complete(self, text, state):
+        # if state==0:
+        #     if text:
+        #         self.matches= [cmd + ' ' for cmd in self.all_executables if cmd.startswith(text)]
+        #     else:
+        #         self.matches= [cmd + ' ' for cmd in self.all_executables]
+        
+        if text!=self.current_buffer:
+            self.current_buffer=text
+            self.last_tab_count=0
+            self.matches=self._get_matches(text)
+            
         if state==0:
-            if text:
-                self.matches= [cmd + ' ' for cmd in self.all_executables if cmd.startswith(text)]
-            else:
-                self.matches= [cmd + ' ' for cmd in self.all_executables]
+            self.last_tab_count+=1
+        
+        if len(self.matches)>1:
+            if self.last_tab_count==1:
+                sys.stdout.write('\a')
+                sys.stdout.flush()
+                return text
+            elif self.last_tab_count==2:
+                print()
+                print(" ".join(self.matches))
+                print(f"$ {text}", end="")
+                return text
         try:
-            return self.matches[state]
+            match=self.matches[state]
+            return match+' '
         except IndexError:
             return None
         
@@ -213,7 +240,8 @@ class Shell:
         
     def _setup_completion(self):
         readline.parse_and_bind('tab: complete')
-        readline.set_completer(CommandCompleter(self._commands.keys()).complete)
+        self.completer=CommandCompleter(self._commands.keys())
+        readline.set_completer(self.completer.complete)
         readline.set_completer_delims(' \t\n')
     
     @staticmethod
