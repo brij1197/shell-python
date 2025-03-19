@@ -168,9 +168,6 @@ class CommandCompleter:
     def __init__(self, commands):
         self.commands=commands
         self.all_executables=self._get_all_executables()
-        self.matches=[]
-        self.current_buffer=""
-        self.last_tab_count=0
         
     def _get_all_executables(self):
         executables=set(self.commands)
@@ -192,35 +189,19 @@ class CommandCompleter:
     def _get_matches(self,text):
         return sorted([cmd for cmd in self.all_executables if cmd.startswith(text)])
 
+    def display_matches(self, substitution, matches, longest_match_length):
+        print()
+        print("  ".join(matches))
+        print(f"$ {substitution}", end="")
   
     def complete(self, text, state):
-        if text!=self.current_buffer:
-            self.current_buffer=text
-            self.last_tab_count=0
-            self.matches=self._get_matches(text)
-            
-        if state==0:
-            self.last_tab_count+=1
+        matches = self._get_matches(text)
         
-        if len(self.matches)>1:
-            if self.last_tab_count==1:
-                sys.stdout.write('\a')
-                sys.stdout.flush()
-                return text
-            elif self.last_tab_count==2:
-                readline.insert_text('')
-                readline.redisplay()
-                matches_str = "  ".join(self.matches)
-                os.write(1, b"\n")
-                os.write(1, matches_str.encode())
-                os.write(1, b"\n")
-                os.write(1, f"$ {text}".encode())
-                return text
-        try:
-            match=self.matches[state]
-            return match+' '
-        except IndexError:
-            return None
+        if len(matches) > 1 and state == 0:
+            sys.stdout.write('\a')
+            sys.stdout.flush()
+            
+        return matches[state] + " " if state < len(matches) else None
         
 
 class Shell:
@@ -241,6 +222,7 @@ class Shell:
         self.completer=CommandCompleter(self._commands.keys())
         readline.set_completer(self.completer.complete)
         readline.set_completer_delims(' \t\n')
+        readline.set_completion_display_matches_hook(self.completer.display_matches)
     
     @staticmethod
     def get_builtin_commands()->List[str]:
