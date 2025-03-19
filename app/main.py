@@ -191,7 +191,7 @@ class CommandCompleter:
 
     def display_matches(self, substitution, matches, longest_match_length):
         print()
-        print("  ".join(matches))
+        print(" ".join(matches))
         print(f"$ {substitution}", end="")
   
     def complete(self, text, state):
