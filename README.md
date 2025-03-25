@@ -10,11 +10,20 @@ A custom shell implementation in Python that provides basic shell functionality,
   - `pwd` - Print working directory
   - `cd` - Change directory with support for `~` and `-` (previous directory)
   - `type` - Display command type (builtin or external)
-- Command-line completion using the **Tab** key
-- Support for external command execution
-- I/O redirection (`>`, `>>`, `2>`, `2>>`)
-- Quote handling for both single and double quotes
-- Error handling for various file operations
+- **Support for External Commands:**
+  - Executes commands found in the system `$PATH`
+  - Runs executable files directly if found
+- **Command-line Completion:**
+  - Uses the `readline` module to enable Tab completion for both built-in and external commands
+  - Displays possible matches if multiple commands exist
+- **I/O Redirection:**
+  - Standard Output (`>`, `>>`)
+  - Standard Error (`2>`, `2>>`)
+  - Separate handling of `stdout` and `stderr` redirection
+- **Quote Handling:**
+  - Supports both single (`'`) and double (`"`) quotes
+- **Error Handling:**
+  - Handles file not found, permission denied, invalid directory operations, and command execution errors
 
 ## Prerequisites
 - Python **3.x**
@@ -31,7 +40,7 @@ A custom shell implementation in Python that provides basic shell functionality,
    ```
 3. Run the shell:
    ```bash
-   ./yourprogram.sh
+   ./your_program.sh
    ```
 
 ## Usage Examples
@@ -51,6 +60,8 @@ $ cd -  # Return to the previous directory
 ```bash
 $ echo "Hello" > output.txt
 $ echo "World" >> output.txt
+$ echo "Error message" 2> error.log
+$ echo "Append error" 2>> error.log
 ```
 
 ### Command Type Checking
@@ -65,7 +76,7 @@ python is /usr/bin/python
 ## Implementation Details
 - **Object-oriented design** with the Command pattern
 - **Abstract base class** for command implementation
-- Support for both **built-in and external commands**
+- **Support for both built-in and external commands**
 - **Robust command parsing** with quote handling
 - **Command completion** using the `readline` module
 - **File descriptor handling** for I/O redirection
@@ -77,3 +88,4 @@ The shell includes comprehensive error handling for:
 - Invalid directory operations
 - Command execution errors
 - Invalid command syntax
+- Missing arguments in built-in commands
